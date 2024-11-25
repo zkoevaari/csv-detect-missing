@@ -12,7 +12,7 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use chrono::{DateTime, FixedOffset, TimeDelta};
+use chrono::{FixedOffset, DateTime, SecondsFormat, TimeDelta};
 
 
 #[derive(Debug,PartialEq)]
@@ -34,13 +34,13 @@ impl PartialOrd<Self> for Difference {
 #[derive(Copy,Clone,Debug)]
 enum Value {
     Number(i64),
-    _Timestamp(DateTime<FixedOffset>),
+    Timestamp(DateTime<FixedOffset>),
 }
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Number(i) => i.fmt(f),
-            Self::_Timestamp(t) => t.fmt(f),
+            Self::Timestamp(t) => t.to_rfc3339_opts(SecondsFormat::AutoSi, true).fmt(f),
         }
     }
 }
@@ -50,7 +50,7 @@ impl std::ops::Sub for Value {
     fn sub(self, other: Self) -> Self::Output {
         match (self, other) {
             (Self::Number(i), Self::Number(o)) => Difference::Number(i-o),
-            (Self::_Timestamp(t), Self::_Timestamp(o)) => Difference::Duration(t-o),
+            (Self::Timestamp(t), Self::Timestamp(o)) => Difference::Duration(t-o),
             _ => panic!("cannot use subtract on Values of different variants")
         }
     }
@@ -75,10 +75,16 @@ impl TryFrom<String> for Format {
 }
 impl Format {
     fn parse_value(&self, s: String) -> Result<Value, String> {
+        fn format_err(e: impl Error) -> String { format!("could not be parsed: {}", e) }
+
+        let s = s.trim()
+                 .trim_start_matches("\"").trim_end_matches("\"")
+                 .replace('_', "T"); //Not clear if valid in RFC3339, but it cannot hurt anyone to allow here
         match self {
             Self::UInt => Ok(Value::Number(u32::from_str(&s)
-                            .map_err(|e| format!("could not be parsed: {}", e))?.into())),
-            _ => todo!()
+                            .map_err(format_err)?.into())),
+            Self::RFC3339 => Ok(Value::Timestamp(DateTime::parse_from_rfc3339(&s)
+                                .map_err(format_err)?)),
         }
     }
 
@@ -95,10 +101,11 @@ impl Format {
                 let base: char = s.pop().ok_or(format!("{}: empty", &err_base))?;
                 let value = u32::from_str(&s).map_err(|e| format!("{}: {}", &err_base, e))?;
                 match base {
-                    'd' => Ok(Difference::Duration(TimeDelta::days(value.into()))),
-                    'h' => Ok(Difference::Duration(TimeDelta::hours(value.into()))),
-                    'm' => Ok(Difference::Duration(TimeDelta::minutes(value.into()))),
                     's' => Ok(Difference::Duration(TimeDelta::seconds(value.into()))),
+                    'm' => Ok(Difference::Duration(TimeDelta::minutes(value.into()))),
+                    'h' => Ok(Difference::Duration(TimeDelta::hours(value.into()))),
+                    'd' => Ok(Difference::Duration(TimeDelta::days(value.into()))),
+                    'w' => Ok(Difference::Duration(TimeDelta::weeks(value.into()))),
                     ch => Err(format!("{}: unexpected character '{}'", &err_base, ch))
                 }
             }
@@ -208,11 +215,11 @@ pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
                 true => line,
                 false => match line.split(&args.delimiter)
                                     .nth((args.index.checked_sub(1).unwrap()).into()) {
-                    Some(s) => s,
-                    None => match args.allow_empty {
-                        true => break 'processing,
-                        false => return Err(format!("line {} is invalid: no field could be found at index {}", n, args.index).into())
-                    }
+                    Some(s) if !s.is_empty() => s,
+                    Some(_) if args.allow_empty => break 'processing,
+                    Some(_) => return Err(format!("line {} is invalid: empty field at index {}", n, args.index).into()),
+                    None if args.allow_empty => break 'processing,
+                    None => return Err(format!("line {} is invalid: no field could be found at index {}", n, args.index).into())
                 }
             };
 

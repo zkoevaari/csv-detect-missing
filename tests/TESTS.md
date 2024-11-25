@@ -62,9 +62,9 @@ https://en.wikipedia.org/wiki/Apollo_9
 through
 https://en.wikipedia.org/wiki/Apollo_17
 
-- delimiter: ?comma?
+- delimiter: semicolon
 - index: 2 or 7
-- format: ?rfc-3339?
+- format: rfc-3339
 - comment: # (default)
 
 Date capabilities can be demonstrated with this file, including various time zones. Also because several missions did not reach the Moon (although some were close), the empty landing date field should halt the program as invalid, needing the -a flag to proceed.
@@ -72,8 +72,13 @@ Date capabilities can be demonstrated with this file, including various time zon
 
 ### moon.csv
 
-TODO
+This is basically an excerpt from apollo.csv containing only the Moon landing dates. It was heavily edited to test date parsing, column no. 2 includes several different RFC3339 format variations, which should all be accepted by the parser.
 
+- delimiter: space
+- index: 2
+- format: rfc-3339
+- comment: # (default)
+- allow-empty: there is an empty line where 13 would be, so the flag should be set
 
 
 Sensor tests
@@ -113,16 +118,16 @@ File contains readings from a weather station. Measurement interval is 1 minute 
 - delimiter: tab
 - index: 1
 - format: rfc-3339
-- comment: # on line 1
+- comment: # (default)
 
-TODO
+Due to fluctuations in the seconds field, program should report 13 occurrences when invoked with --gt "60s", but produce empty output with "61s".
 
 
 ### sensor4.csv
 
 - delimiter: space
 - index: 1
-- format: ?
+- format: rfc-3339
 
 File contains counter data, with readout interval of 1 hour nominal.
 
