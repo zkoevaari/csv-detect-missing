@@ -118,19 +118,20 @@ impl Format {
             Self::RFC3339 |
             Self::Unix |
             Self::UnixMs => {
-                //Using "1h" as default
-                //Note: invalid "1" given will also be accepted this way
+                //Converting default "1" (which is otherwise a valid UInt etc.) to "1h"
+                //Note: invalid "1" given explicitly will also be accepted this way
                 if s == "1" { s = "1h".to_string(); }
 
                 let err_base = format!("invalid rfc-3339 gap '{}'", s.as_str());
                 let base: char = s.pop().ok_or(format!("{}: empty", &err_base))?;
-                let value = u32::from_str(&s).map_err(|e| format!("{}: {}", &err_base, e))?;
+                if s.is_empty() { return Err(format!("{}: invalid value or timebase", &err_base)); }
+                let value = i64::from_str(&s).map_err(|e| format!("{}: {}", &err_base, e))?;
                 match base {
-                    's' => Ok(Difference::Duration(TimeDelta::seconds(value.into()))),
-                    'm' => Ok(Difference::Duration(TimeDelta::minutes(value.into()))),
-                    'h' => Ok(Difference::Duration(TimeDelta::hours(value.into()))),
-                    'd' => Ok(Difference::Duration(TimeDelta::days(value.into()))),
-                    'w' => Ok(Difference::Duration(TimeDelta::weeks(value.into()))),
+                    's' => Ok(Difference::Duration(TimeDelta::seconds(value))),
+                    'm' => Ok(Difference::Duration(TimeDelta::minutes(value))),
+                    'h' => Ok(Difference::Duration(TimeDelta::hours(value))),
+                    'd' => Ok(Difference::Duration(TimeDelta::days(value))),
+                    'w' => Ok(Difference::Duration(TimeDelta::weeks(value))),
                     ch => Err(format!("{}: unexpected character '{}'", &err_base, ch))
                 }
             }

@@ -62,7 +62,7 @@ default behavior when omitted, unless one of --ge, --lt, or --le
 is specified.
 Gap syntax is according to selected format:
     uint and int: Specified as a signed integer. [default: 1]
-    rfc-3339, unix, and unix_ms: Unsigned integer followed by one
+    rfc-3339, unix, and unix_ms: Signed integer followed by one
         character from [dhms], like \"12h\". [default: 1h]")
             .num_args(1)
             .value_name("GAP")

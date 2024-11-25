@@ -9,7 +9,6 @@ TODO
 ## Unimplemented features ##
 * Ellipsize field in error messages
 * FILE argument '-' should mean to read the argument/content from STDIN (file descriptor 0)
-* Should be able to use negative time-base gaps for timestamps
 
 ## Proposed features ##
 * Gap resolution: should be dependent of time-base used (and clarify in help)

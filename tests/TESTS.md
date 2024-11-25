@@ -70,9 +70,14 @@ https://en.wikipedia.org/wiki/Apollo_17
 Date capabilities can be demonstrated with this file, including various time zones. Also because several missions did not reach the Moon (although some were close), the empty landing date field should halt the program as invalid, needing the -a flag to proceed.
 
 
+### apollo_ordered.csv
+
+Same as _apollo.csv_, except flights have been ordered by total mission duration, to easily test negative date gaps between subsequent lines.
+
+
 ### moon.csv
 
-This is basically an excerpt from apollo.csv containing only the Moon landing dates. It was heavily edited to test date parsing, column no. 2 includes several different RFC3339 format variations, which should all be accepted by the parser.
+This is basically an excerpt from _apollo.csv_ containing only the Moon landing dates. It was heavily edited to test date parsing, column no. 2 includes several different RFC3339 format variations, which should all be accepted by the parser.
 
 - delimiter: space
 - index: 2
@@ -86,7 +91,7 @@ Sensor tests
 
 Tests that much more akin to real-world engineering data, like periodic sensor readings.
 
-Important: These files are based on actual measurements from my own collection, severly edited. To be symmetric, I am releasing these under CC BY-SA 4.0 license as well. Please see the TEST_LICENSE file for the full text.
+Important: These files are based on actual measurements from my own collection, severely edited. To be symmetric, I am releasing these under CC BY-SA 4.0 license as well. Please see the _TEST_LICENSE_ file for the full text.
 
 
 ### sensor1.csv
@@ -97,7 +102,7 @@ File contains readings from three different sensors, one measurement per line. F
 - index: 2 or 3
 - format: uint (timestamp)
 
-When considering field no.2, program should produce empty output, but there are a couple of places where fields no.3 (and rest) are completely missing. These should halt the program when run with index set to 3 (-i3), and whith the allow flag (-a) also set, it should give a single result considering that on all but one occasion only 2 of the 3 sensors missed. When run through grep to filter for only one of the IDs, it should report all 9 cases of 4-minute gaps.
+When considering field no.2, program should produce empty output, but there are a couple of places where fields no.3 (and rest) are completely missing. These should halt the program when run with index set to 3 (-i3), and with the allow flag (-a) also set, it should give a single result considering that on all but one occasion only 2 of the 3 sensors missed. When run through grep to filter for only one of the IDs, it should report all 9 cases of 4-minute gaps.
 
 
 ### sensor2.csv
@@ -108,7 +113,7 @@ File contains readings from four temperature sensors. Measurement interval is 5 
 - index: 1
 - format: rfc-3339
 
-Program should detect a gap of slightly more then an hour around 4PM, where also there is an empty line insterted.
+Program should detect a gap of slightly more then an hour around 4PM, where also there is an empty line inserted.
 
 
 ### sensor3.csv
