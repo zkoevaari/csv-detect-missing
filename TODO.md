@@ -17,3 +17,5 @@ TODO
 * Header in diff mode and quiet flag with -q to turn it off
 * Output format option (for timestamps)
 * Multiple comparison options, or some way to chain?
+* Floating point numeric format
+* Full ISO 8601 support

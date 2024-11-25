@@ -43,10 +43,11 @@ the whole line being treated as one field.")
             .help("Format")
             .long_help("Format of the selected field, with the following options supported:
     uint: Unsigned integer value.
+    int: Signed integer value.
     rfc-3339: Timestamp like \"yyyy-mm-ddTHH:MM:SSZ\".")
             .num_args(1)
             .value_name("FORMAT")
-            .value_parser(["uint", "rfc-3339"])
+            .value_parser(["uint", "int", "rfc-3339"])
             .hide_possible_values(true)
             .default_value("uint")
         )
@@ -58,7 +59,7 @@ when comparing the difference between subsequent lines. This is
 default behavior when omitted, unless one of --ge, --lt, or --le
 is specified.
 Gap syntax is according to selected format:
-    uint: Specified as an unsigned integer. [default: 1]
+    uint and int: Specified as a signed integer. [default: 1]
     rfc-3339: Unsigned integer followed by one character from
         [dhms], like \"12h\". [default: 1h]")
             .num_args(1)

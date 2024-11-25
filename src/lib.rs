@@ -60,6 +60,7 @@ impl std::ops::Sub for Value {
 #[derive(Debug)]
 pub enum Format {
     UInt,
+    Int,
     RFC3339,
 }
 impl TryFrom<String> for Format {
@@ -68,6 +69,7 @@ impl TryFrom<String> for Format {
     fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.as_str() {
             "uint" => Ok(Self::UInt),
+            "int" => Ok(Self::Int),
             "rfc-3339" => Ok(Self::RFC3339),
             _ => Err(format!("invalid format string: '{}'", s))
         }
@@ -77,21 +79,31 @@ impl Format {
     fn parse_value(&self, s: String) -> Result<Value, String> {
         fn format_err(e: impl Error) -> String { format!("could not be parsed: {}", e) }
 
-        let s = s.trim()
-                 .trim_start_matches("\"").trim_end_matches("\"")
-                 .replace('_', "T"); //Not clear if valid in RFC3339, but it cannot hurt anyone to allow here
+        let s = s.trim().trim_start_matches("\"").trim_end_matches("\"");
         match self {
-            Self::UInt => Ok(Value::Number(u32::from_str(&s)
-                            .map_err(format_err)?.into())),
-            Self::RFC3339 => Ok(Value::Timestamp(DateTime::parse_from_rfc3339(&s)
-                                .map_err(format_err)?)),
+            Self::UInt => {
+                let u = u64::from_str(&s)
+                                .map_err(format_err)?;
+                match u > i64::MAX.try_into().unwrap() {
+                    true => Err("could not be parsed: number too large (>2^64-1)".to_string()),
+                    false => Ok(Value::Number(u.try_into().unwrap()))
+                }
+            },
+            Self::Int => Ok(Value::Number(i64::from_str(&s)
+                                                .map_err(format_err)?)),
+            Self::RFC3339 => {
+                let s = s.replace('_', "T"); //Not clear if valid in RFC3339, but it cannot hurt anyone to allow here
+                Ok(Value::Timestamp(DateTime::parse_from_rfc3339(&s)
+                                                .map_err(format_err)?))
+            },
         }
     }
 
     pub fn parse_diff(&self, mut s: String) -> Result<Difference, String> {
         match self {
-            Self::UInt => Ok(Difference::Number(u32::from_str(&s)
-                            .map_err(|e| format!("invalid uint gap '{}': {}", s, e))?.into())),
+            Self::UInt |
+            Self::Int => Ok(Difference::Number(i64::from_str(&s)
+                            .map_err(|e| format!("invalid numeric gap '{}': {}", s, e))?.into())),
             Self::RFC3339 => {
                 //Using "1h" as default
                 //Note: invalid "1" given will also be accepted this way
@@ -166,9 +178,9 @@ pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
         },
         "" => {
             if args.index != 1 {
-                return Err("supplied index and delimiter are incompatible".into())
-            } else {
-                if args.verbose { println!("No delimiter, using whole line as target field.") }
+                return Err("supplied index and delimiter are incompatible".into());
+            } else if args.verbose {
+                println!("No delimiter, using whole line as target field.");
             }
         },
         _ => ()
