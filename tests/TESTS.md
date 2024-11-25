@@ -91,13 +91,13 @@ Important: These files are based on actual measurements from my own collection, 
 
 ### sensor1.csv
 
-File contains readings from three different sensors, one measurement per line. First field is the sensor ID, second the nominal timestamp and third is actual timestamp. Readout interval is 2 minutes nominal.
+File contains readings from three different sensors, one measurement per line. First field is the sensor ID, second the nominal timestamp (sec resolution) and third is the actual timestamp (millisec resolution). Readout interval is 2 minutes nominal.
 
 - delimiter: comma
 - index: 2 or 3
 - format: uint (timestamp)
 
-When considering field no.2, program should produce empty output, but there are a couple of places where fields no.3 (and rest) are completely missing. These should halt the program when run with index set to 3 (-i3), and whith the allow flag (-a) also set, it should give a single result considering that on all but one occasion only 2 of the 3 sensors missed. When run through grep to filter for only one of the IDs, it should report all ? pieces of 4-minute gaps.
+When considering field no.2, program should produce empty output, but there are a couple of places where fields no.3 (and rest) are completely missing. These should halt the program when run with index set to 3 (-i3), and whith the allow flag (-a) also set, it should give a single result considering that on all but one occasion only 2 of the 3 sensors missed. When run through grep to filter for only one of the IDs, it should report all 9 cases of 4-minute gaps.
 
 
 ### sensor2.csv

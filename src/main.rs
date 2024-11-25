@@ -44,10 +44,12 @@ the whole line being treated as one field.")
             .long_help("Format of the selected field, with the following options supported:
     uint: Unsigned integer value.
     int: Signed integer value.
+    unix: Non-leap seconds passed since the Unix Epoch.
+    unix_ms: Similar to 'unix' but in milliseconds.
     rfc-3339: Timestamp like \"yyyy-mm-ddTHH:MM:SSZ\".")
             .num_args(1)
             .value_name("FORMAT")
-            .value_parser(["uint", "int", "rfc-3339"])
+            .value_parser(["uint", "int", "unix", "unix_ms", "rfc-3339"])
             .hide_possible_values(true)
             .default_value("uint")
         )
@@ -60,8 +62,8 @@ default behavior when omitted, unless one of --ge, --lt, or --le
 is specified.
 Gap syntax is according to selected format:
     uint and int: Specified as a signed integer. [default: 1]
-    rfc-3339: Unsigned integer followed by one character from
-        [dhms], like \"12h\". [default: 1h]")
+    rfc-3339, unix, and unix_ms: Unsigned integer followed by one
+        character from [dhms], like \"12h\". [default: 1h]")
             .num_args(1)
             .value_name("GAP")
             .value_parser(clap::builder::NonEmptyStringValueParser::new())

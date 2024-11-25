@@ -61,6 +61,8 @@ impl std::ops::Sub for Value {
 pub enum Format {
     UInt,
     Int,
+    Unix,
+    UnixMs,
     RFC3339,
 }
 impl TryFrom<String> for Format {
@@ -70,6 +72,8 @@ impl TryFrom<String> for Format {
         match s.as_str() {
             "uint" => Ok(Self::UInt),
             "int" => Ok(Self::Int),
+            "unix" => Ok(Self::Unix),
+            "unix_ms" => Ok(Self::UnixMs),
             "rfc-3339" => Ok(Self::RFC3339),
             _ => Err(format!("invalid format string: '{}'", s))
         }
@@ -78,6 +82,7 @@ impl TryFrom<String> for Format {
 impl Format {
     fn parse_value(&self, s: String) -> Result<Value, String> {
         fn format_err(e: impl Error) -> String { format!("could not be parsed: {}", e) }
+        let timestamp_err = "could not be parsed: invalid timestamp";
 
         let s = s.trim().trim_start_matches("\"").trim_end_matches("\"");
         match self {
@@ -91,6 +96,12 @@ impl Format {
             },
             Self::Int => Ok(Value::Number(i64::from_str(&s)
                                                 .map_err(format_err)?)),
+            Self::Unix => Ok(Value::Timestamp(DateTime::from_timestamp(i64::from_str(&s)
+                            .map_err(format_err)?, 0)
+                            .ok_or(timestamp_err)?.into())),
+            Self::UnixMs => Ok(Value::Timestamp(DateTime::from_timestamp_millis(i64::from_str(&s)
+                                .map_err(format_err)?)
+                                .ok_or(timestamp_err)?.into())),
             Self::RFC3339 => {
                 let s = s.replace('_', "T"); //Not clear if valid in RFC3339, but it cannot hurt anyone to allow here
                 Ok(Value::Timestamp(DateTime::parse_from_rfc3339(&s)
@@ -104,7 +115,9 @@ impl Format {
             Self::UInt |
             Self::Int => Ok(Difference::Number(i64::from_str(&s)
                             .map_err(|e| format!("invalid numeric gap '{}': {}", s, e))?.into())),
-            Self::RFC3339 => {
+            Self::RFC3339 |
+            Self::Unix |
+            Self::UnixMs => {
                 //Using "1h" as default
                 //Note: invalid "1" given will also be accepted this way
                 if s == "1" { s = "1h".to_string(); }
