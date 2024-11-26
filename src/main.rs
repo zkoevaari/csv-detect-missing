@@ -8,6 +8,8 @@
 
 use csv_detect_missing::*;
 
+use std::io::IsTerminal;
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arg_matches = clap::Command::new("csv-detect-missing")
@@ -174,6 +176,11 @@ contain one valid value per line.")
         false => Mode::Diff(arg_matches.get_one::<String>("diff").unwrap().to_string())
     };
 
+    let filepath = arg_matches.get_one::<String>("FILE").unwrap();
+    if filepath == "-" && std::io::stdin().is_terminal() {
+        return Err("Reading from STDIN in interactive mode is not supported".into());
+    }
+
     let args = Arguments {
         delimiter: arg_matches.get_one::<String>("delimiter").unwrap().to_string(),
         index: *arg_matches.get_one("index").unwrap(),
@@ -188,7 +195,7 @@ contain one valid value per line.")
 
         mode,
 
-        path: arg_matches.get_one::<String>("FILE").unwrap().into(),
+        path: filepath.into(),
     };
 
 

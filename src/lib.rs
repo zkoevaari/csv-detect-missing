@@ -214,7 +214,11 @@ pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
     }
 
 
-    let mut reader = BufReader::new(File::open(args.path)?);
+    let mut reader: Box<dyn BufRead> = if args.path == PathBuf::from("-") {
+        Box::new(BufReader::new(std::io::stdin().lock()))
+    } else {
+        Box::new(BufReader::new(File::open(args.path)?))
+    };
 
     let mut buf = String::new();
     let mut n: u64 = 0;
