@@ -191,5 +191,15 @@ contain one valid value per line.")
         path: arg_matches.get_one::<String>("FILE").unwrap().into(),
     };
 
-    csv_detect_missing(args)
+
+    match csv_detect_missing(args) {
+        Err(err) => match err.downcast_ref::<std::io::Error>() {
+            Some(ioerr) => match ioerr.kind() {
+                std::io::ErrorKind::BrokenPipe => Ok(()),
+                _ => Err(err)
+            },
+            None => Err(err)
+        },
+        Ok(ok) => Ok(ok)
+    }
 }

@@ -4,7 +4,6 @@ TODO
 
 ## Bugs ##
 * Fails to parse space separated rfc-3339 in space delimited file even if quoted, e.g. "1971-07-30 22:16:29Z"
-* Broken pipe panic when run as input to 'head'
 
 ## Unimplemented features ##
 * Ellipsize field in error messages

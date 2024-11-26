@@ -8,7 +8,7 @@
 
 use std::error::Error;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -120,11 +120,11 @@ impl Format {
             Self::UnixMs => {
                 //Converting default "1" (which is otherwise a valid UInt etc.) to "1h"
                 //Note: invalid "1" given explicitly will also be accepted this way
-                if s == "1" { s = "1h".to_string(); }
+                if s == "1" { s = "1h".to_string() }
 
                 let err_base = format!("invalid rfc-3339 gap '{}'", s.as_str());
                 let base: char = s.pop().ok_or(format!("{}: empty", &err_base))?;
-                if s.is_empty() { return Err(format!("{}: invalid value or timebase", &err_base)); }
+                if s.is_empty() { return Err(format!("{}: invalid value or timebase", &err_base)) }
                 let value = i64::from_str(&s).map_err(|e| format!("{}: {}", &err_base, e))?;
                 match base {
                     's' => Ok(Difference::Duration(TimeDelta::seconds(value))),
@@ -183,18 +183,18 @@ pub struct Arguments {
 
 
 pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
-    if args.verbose { println!("{:#?}", args) };
+    if args.verbose { writeln!(std::io::stdout(), "{:#?}", args)? };
 
     match args.delimiter.as_str() {
         "\\t" => {
             args.delimiter = char::from(9).to_string();
-            if args.verbose { println!("Using Tabulator as input delimiter.") }
+            if args.verbose { writeln!(std::io::stdout(), "Using Tabulator as input delimiter.")? }
         },
         "" => {
             if args.index != 1 {
                 return Err("supplied index and delimiter are incompatible".into());
             } else if args.verbose {
-                println!("No delimiter, using whole line as target field.");
+                writeln!(std::io::stdout(), "No delimiter, using whole line as target field.")?;
             }
         },
         _ => ()
@@ -203,11 +203,11 @@ pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
         match odelim.as_str() {
             "\\t" => {
                 args.mode = Mode::Diff(char::from(9).to_string());
-                if args.verbose { println!("Using Tabulator as output delimiter.") }
+                if args.verbose { writeln!(std::io::stdout(), "Using Tabulator as output delimiter.")? }
             },
             "" => {
                 args.mode = Mode::Diff(args.delimiter.clone());
-                if args.verbose { println!("No output delimiter, using same as input.") };
+                if args.verbose { writeln!(std::io::stdout(), "No output delimiter, using same as input.")? }
             },
             _ => ()
         }
@@ -257,13 +257,13 @@ pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
                 let condition = args.comparison.compare(&diff, &args.difference);
                 if condition {
                     match args.mode {
-                        Mode::Diff(ref delim) => println!("{}{}{}", prev.value, delim, value),
+                        Mode::Diff(ref delim) => writeln!(std::io::stdout(), "{}{}{}", prev.value, delim, value)?,
                         Mode::Filter => {
                             match first {
                                 true => first = false,
-                                false => println!("")
+                                false => writeln!(std::io::stdout(), "")?
                             }
-                            println!("{}\n{}", prev.line, line);
+                            writeln!(std::io::stdout(), "{}\n{}", prev.line, line)?;
                         },
                     }
                 }
