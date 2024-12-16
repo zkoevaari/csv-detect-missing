@@ -2,9 +2,9 @@
 name = "csv-detect-missing"
 version = "1.0.0-alpha.2"
 authors = ["Zoltan Kovari"]
-repository = "https://github.com/zkoevaari/csv-detect-missing.git"
-license = "Apache-2.0"
 edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/zkoevaari/csv-detect-missing.git"
 
 [dependencies]
 chrono = "0.4"
