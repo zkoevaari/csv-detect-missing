@@ -87,19 +87,19 @@ impl Format {
         let s = s.trim().trim_start_matches("\"").trim_end_matches("\"");
         match self {
             Self::UInt => {
-                let u = u64::from_str(&s)
+                let u = u64::from_str(s)
                                 .map_err(format_err)?;
                 match u > i64::MAX.try_into().unwrap() {
                     true => Err("could not be parsed: number too large (>2^64-1)".to_string()),
                     false => Ok(Value::Number(u.try_into().unwrap()))
                 }
             },
-            Self::Int => Ok(Value::Number(i64::from_str(&s)
+            Self::Int => Ok(Value::Number(i64::from_str(s)
                                                 .map_err(format_err)?)),
-            Self::Unix => Ok(Value::Timestamp(DateTime::from_timestamp(i64::from_str(&s)
+            Self::Unix => Ok(Value::Timestamp(DateTime::from_timestamp(i64::from_str(s)
                             .map_err(format_err)?, 0)
                             .ok_or(timestamp_err)?.into())),
-            Self::UnixMs => Ok(Value::Timestamp(DateTime::from_timestamp_millis(i64::from_str(&s)
+            Self::UnixMs => Ok(Value::Timestamp(DateTime::from_timestamp_millis(i64::from_str(s)
                                 .map_err(format_err)?)
                                 .ok_or(timestamp_err)?.into())),
             Self::RFC3339 => {
@@ -114,7 +114,7 @@ impl Format {
         match self {
             Self::UInt |
             Self::Int => Ok(Difference::Number(i64::from_str(&s)
-                            .map_err(|e| format!("invalid numeric gap '{}': {}", s, e))?.into())),
+                            .map_err(|e| format!("invalid numeric gap '{}': {}", s, e))?)),
             Self::RFC3339 |
             Self::Unix |
             Self::UnixMs => {
@@ -265,7 +265,7 @@ pub fn csv_detect_missing(mut args: Arguments) -> Result<(), Box<dyn Error>> {
                         Mode::Filter => {
                             match first {
                                 true => first = false,
-                                false => writeln!(std::io::stdout(), "")?
+                                false => writeln!(std::io::stdout())?
                             }
                             writeln!(std::io::stdout(), "{}\n{}", prev.line, line)?;
                         },
