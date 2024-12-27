@@ -8,4 +8,15 @@ repository = "https://github.com/zkoevaari/csv-detect-missing.git"
 
 [dependencies]
 chrono = "0.4"
-clap = {version = "4.5", default-features = false, features = ["cargo", "error-context", "help", "std", "suggestions", "usage"]}
+
+[dependencies.clap]
+version = "4.5"
+default-features = false
+features = [
+    "cargo",
+    "error-context",
+    "help",
+    "std",
+    "suggestions",
+    "usage",
+]
